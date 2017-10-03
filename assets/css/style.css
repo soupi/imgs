@@ -7,3 +7,6 @@
 p { text-align: center; }
 
 img { max-width: 100%; display: block; margin: auto; }
+
+.imgNav { text-align: center; margin: 5px; }
+.imgNav * { margin: 5px; }
