@@ -2,11 +2,14 @@
 
 .thumbnail { max-width: 150px; max-height: 150px; }
 
-.main { width: 80%; margin: auto; }
-
 p { text-align: center; }
 
-img { max-width: 100%; display: block; margin: auto; }
+html { height: 100% }
+body { height: 98% }
+.main { width: 80%; margin: auto; height: 98%; overflow: hidden; }
+
+img { max-width: 100%; max-height: 90%; display: block; margin: auto; }
+
 
 .imgNav { text-align: center; margin: 5px; }
 .imgNav * { margin: 5px; }
