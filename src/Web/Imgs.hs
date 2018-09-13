@@ -218,8 +218,10 @@ filePageTemplate path prev next =
     H.div_ [ H.class_ "imgNav" ] $ do
       H.a_ [ H.href_ $ T.pack $ "/" <> prev ] $ do
         H.toHtml $ T.pack "<< prev "
+      H.a_ [ H.href_ $ T.pack $ "/" <> File.takeDirectory path ] $ do
+        H.toHtml $ T.pack "up"
       H.a_ [ H.href_ $ T.pack $ "/" <> next ] $ do
         H.toHtml $ T.pack " next >>"
-    H.a_ [ H.href_ $ T.pack $ "/" <> File.takeDirectory path ] $ do
+    H.a_ [ H.href_ $ T.pack $ "/" <> next ] $ do
       H.img_ [ H.src_ $ T.pack $ imgsPath <> path ]
 
