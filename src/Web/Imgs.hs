@@ -8,11 +8,12 @@ import qualified Data.Text.Encoding as T
 import qualified Network.Mime as Mime (defaultMimeLookup)
 import qualified System.Directory as Dir
 import qualified System.FilePath  as File
+import System.FilePath ((</>))
 import Control.Arrow ((***))
 import Control.Monad
 import Control.Monad.IO.Class
-import Data.Monoid
 import Data.List
+import Data.Char (toLower)
 import Data.Foldable
 import Web.Spock hiding (body, head)
 import Web.Spock.Config
@@ -82,7 +83,7 @@ router = do
     servePage . T.unpack
 
 imgsPath :: FilePath
-imgsPath = "/__imgs_imgs/"
+imgsPath = "/__imgs_imgs"
 
 -------------
 -- Servers --
@@ -111,19 +112,15 @@ serveFile path = do
 
 servePage :: MonadIO m => FilePath -> ActionT m b
 servePage path = do
-  let currPath = "./" <> path
+  let
+    currPath = "." </> path
   (isDir, isFile) <- liftIO $
     (,) <$> Dir.doesDirectoryExist currPath <*> Dir.doesFileExist currPath
 
   if
     | isDir -> do
         (dirs, imgs) <- liftIO $ getDirAndImages currPath
-        let
-          prefix
-            | currPath == "./" = ""
-            | otherwise = "/" <> currPath <> "/"
-
-        lucid $ dirPageTemplate currPath prefix dirs imgs
+        lucid $ dirPageTemplate currPath currPath dirs imgs
 
     | isFile -> do
         (_, imgs) <- liftIO $ getDirAndImages (File.takeDirectory currPath)
@@ -147,7 +144,7 @@ getDirAndImages currDir = do
         | isDir' ->
           pure (file' : dirs, imgs)
 
-        | drop 1 (File.takeExtension file') `elem` (words "png jpg jpeg gif bmp svg")  ->
+        | drop 1 (map toLower $ File.takeExtension file') `elem` (words "png jpg jpeg gif bmp svg")  ->
           pure (dirs, file' : imgs)
 
         | otherwise -> do
@@ -197,18 +194,18 @@ dirPageTemplate currDir prefix dirs imgs = template currDir $ do
   H.h2_ $ H.toHtml currDir
   H.ul_ [ H.class_ "dirs" ] $ do
     H.li_ [ H.class_ "up" ] $
-      H.a_ [ H.href_ $ T.pack (prefix <> "..") ] $ do
+      H.a_ [ H.href_ $ T.pack (prefix </> ".." </> "/") ] $ do
         H.img_ [ H.src_ $ T.pack "/assets/images/up.png", H.class_ "thumbnail" ]
         H.p_ $ H.toHtml $ T.pack ".."
 
     flip mapM_ dirs $ \l ->
-      H.li_ . H.a_ [ H.href_ $ T.pack (prefix <> l) ] $ do
+      H.li_ . H.a_ [ H.href_ $ T.pack (prefix </> l) ] $ do
         H.img_ [ H.src_ $ T.pack "/assets/images/dir.png", H.class_ "thumbnail" ]
         H.p_ $ H.toHtml $ if (length l > 15) then take 12 l <> "..." else l
 
     flip mapM_ imgs $ \l ->
-      H.li_ . H.a_ [ H.href_ $ T.pack (prefix <> l) ] $ do
-        H.img_ [ H.src_ $ T.pack $ imgsPath <> prefix <> l, H.class_ "thumbnail" ]
+      H.li_ . H.a_ [ H.href_ $ T.pack (prefix </> l) ] $ do
+        H.img_ [ H.src_ $ T.pack $ imgsPath </> prefix </> l, H.class_ "thumbnail" ]
         H.p_ $ H.toHtml $ if (length l > 15) then take 12 l <> "..." else l
 
 filePageTemplate :: FilePath -> FilePath -> FilePath -> Html
@@ -223,5 +220,5 @@ filePageTemplate path prev next =
       H.a_ [ H.href_ $ T.pack $ "/" <> next ] $ do
         H.toHtml $ T.pack " next >>"
     H.a_ [ H.href_ $ T.pack $ "/" <> next ] $ do
-      H.img_ [ H.src_ $ T.pack $ imgsPath <> path ]
+      H.img_ [ H.src_ $ T.pack $ imgsPath </> path ]
 
