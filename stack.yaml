@@ -1,4 +1,9 @@
-resolver: lts-13.25
+resolver: lts-16.26
+
+# uncomment for static executables
+# docker:
+#   enable: true
+#   image: utdemir/ghc-musl:v16-ghc884
 
 packages:
 - '.'
