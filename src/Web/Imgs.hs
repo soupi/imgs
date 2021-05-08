@@ -1,4 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE MultiWayIf #-}
 
 module Web.Imgs where
@@ -26,6 +28,7 @@ import qualified Lucid as H
 
 import Data.ByteString (ByteString)
 import Data.FileEmbed
+
 
 assetsDir :: [(FilePath, ByteString)]
 assetsDir = $(embedDir "assets")
@@ -71,7 +74,7 @@ router :: SpockM () () () ()
 router = do
   -- internal assets
   for_ assetsDir $ \(path_, file_) -> do
-    get (static $ "assets/" <> path_) $
+    get (static $ "/assets/" <> path_) $
       serveBytes path_ file_
 
   -- path for img sources
@@ -120,7 +123,7 @@ servePage path = do
   if
     | isDir -> do
         (dirs, imgs) <- liftIO $ getDirAndImages currPath
-        lucid $ dirPageTemplate currPath currPath dirs imgs
+        lucid $ dirPageTemplate path dirs imgs
 
     | isFile -> do
         (_, imgs) <- liftIO $ getDirAndImages (File.takeDirectory currPath)
@@ -189,22 +192,22 @@ template title body =
       H.div_ [ H.class_ "main" ] body
 
 
-dirPageTemplate :: String -> String -> [String] -> [String] -> Html
-dirPageTemplate currDir prefix dirs imgs = template currDir $ do
-  H.h2_ $ H.toHtml currDir
+dirPageTemplate :: String -> [String] -> [String] -> Html
+dirPageTemplate prefix dirs imgs = template prefix $ do
+  H.h2_ $ H.toHtml prefix
   H.ul_ [ H.class_ "dirs" ] $ do
     H.li_ [ H.class_ "up" ] $
-      H.a_ [ H.href_ $ T.pack (prefix </> ".." </> "/") ] $ do
+      H.a_ [ H.href_ $ T.pack ("/" <> prefix </> "..") ] $ do
         H.img_ [ H.src_ $ T.pack "/assets/images/up.png", H.class_ "thumbnail" ]
         H.p_ $ H.toHtml $ T.pack ".."
 
     flip mapM_ dirs $ \l ->
-      H.li_ . H.a_ [ H.href_ $ T.pack (prefix </> l) ] $ do
+      H.li_ . H.a_ [ H.href_ $ T.pack $ "/" <> prefix </> l ] $ do
         H.img_ [ H.src_ $ T.pack "/assets/images/dir.png", H.class_ "thumbnail" ]
         H.p_ $ H.toHtml $ if (length l > 15) then take 12 l <> "..." else l
 
     flip mapM_ imgs $ \l ->
-      H.li_ . H.a_ [ H.href_ $ T.pack (prefix </> l) ] $ do
+      H.li_ . H.a_ [ H.href_ $ T.pack ("/" <> prefix </> l) ] $ do
         H.img_ [ H.src_ $ T.pack $ imgsPath </> prefix </> l, H.class_ "thumbnail" ]
         H.p_ $ H.toHtml $ if (length l > 15) then take 12 l <> "..." else l
 
