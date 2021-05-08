@@ -3,7 +3,7 @@ resolver: lts-17.10
 # uncomment for static executables
 # docker:
 #   enable: true
-#   image: utdemir/ghc-musl:v16-ghc884
+#   image: utdemir/ghc-musl:v19-ghc8104
 
 packages:
 - '.'
